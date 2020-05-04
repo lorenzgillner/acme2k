@@ -19,7 +19,7 @@ Buffer	snarfbuf;
 /*
  * These functions get called as:
  *
- *	fn(et, t, argt, flag1, flag1, flag2, s, n);
+ *	fn(et, t, argt, flag1, flag2, s, n);
  *
  * Where the arguments are:
  *

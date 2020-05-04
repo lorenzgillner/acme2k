@@ -81,27 +81,27 @@ struct Block
 struct Disk
 {
 	int		fd;
-	vlong		addr;	/* length of temp file */
+	vlong	addr;	/* length of temp file */
 	Block	*free[Maxblock/Blockincr+1];
 };
 
 Disk*	diskinit(void);
 Block*	disknewblock(Disk*, uint);
-void		diskrelease(Disk*, Block*);
-void		diskread(Disk*, Block*, Rune*, uint);
-void		diskwrite(Disk*, Block**, Rune*, uint);
+void	diskrelease(Disk*, Block*);
+void	diskread(Disk*, Block*, Rune*, uint);
+void	diskwrite(Disk*, Block**, Rune*, uint);
 
 struct Buffer
 {
 	uint	nc;
 	Rune	*c;			/* cache */
-	uint	cnc;			/* bytes in cache */
+	uint	cnc;		/* bytes in cache */
 	uint	cmax;		/* size of allocated cache */
 	uint	cq;			/* position of cache */
-	int		cdirty;	/* cache needs to be written */
-	uint	cbi;			/* index of cache Block */
+	int		cdirty;		/* cache needs to be written */
+	uint	cbi;		/* index of cache Block */
 	Block	**bl;		/* array of blocks */
-	uint	nbl;			/* number of blocks */
+	uint	nbl;		/* number of blocks */
 };
 void		bufinsert(Buffer*, uint, Rune*, uint);
 void		bufdelete(Buffer*, uint, uint);
@@ -113,10 +113,10 @@ void		bufreset(Buffer*);
 struct Elog
 {
 	short	type;		/* Delete, Insert, Filename */
-	uint		q0;		/* location of change (unused in f) */
-	uint		nd;		/* number of deleted characters */
-	uint		nr;		/* # runes in string or file name */
-	Rune		*r;
+	uint	q0;			/* location of change (unused in f) */
+	uint	nd;			/* number of deleted characters */
+	uint	nr;			/* # runes in string or file name */
+	Rune	*r;
 };
 void	elogterm(File*);
 void	elogclose(File*);
@@ -128,25 +128,25 @@ void	elogapply(File*);
 struct File
 {
 	Buffer	b;			/* the data */
-	Buffer	delta;	/* transcript of changes */
+	Buffer	delta;		/* transcript of changes */
 	Buffer	epsilon;	/* inversion of delta for redo */
 	Buffer	*elogbuf;	/* log of pending editor changes */
-	Elog		elog;		/* current pending change */
-	Rune		*name;	/* name of associated file */
-	int		nname;	/* size of name */
+	Elog	elog;		/* current pending change */
+	Rune	*name;		/* name of associated file */
+	int		nname;		/* size of name */
 	uvlong	qidpath;	/* of file when read */
-	ulong	mtime;	/* of file when read */
+	ulong	mtime;		/* of file when read */
 	int		dev;		/* of file when read */
 	uchar	sha1[20];	/* of file when read */
-	int		unread;	/* file has not been read from disk */
+	int		unread;		/* file has not been read from disk */
 	int		editclean;	/* mark clean after edit command */
 
 	int		seq;		/* if seq==0, File acts like Buffer */
 	int		mod;
-	Text		*curtext;	/* most recently used associated text */
-	Text		**text;	/* list of associated texts */
+	Text	*curtext;	/* most recently used associated text */
+	Text	**text;		/* list of associated texts */
 	int		ntext;
-	int		dumpid;	/* used in dumping zeroxed windows */
+	int		dumpid;		/* used in dumping zeroxed windows */
 };
 File*		fileaddtext(File*, Text*);
 void		fileclose(File*);
@@ -174,19 +174,19 @@ enum	/* Text.what */
 struct Text
 {
 	File		*file;
-	Frame	fr;
-	Reffont	*reffont;
-	uint	org;
-	uint	q0;
-	uint	q1;
-	int	what;
-	int	tabstop;
-	Window	*w;
-	Rectangle scrollr;
-	Rectangle lastsr;
-	Rectangle all;
-	Row		*row;
-	Column	*col;
+	Frame		fr;
+	Reffont		*reffont;
+	uint		org;
+	uint		q0;
+	uint		q1;
+	int			what;
+	int			tabstop;
+	Window		*w;
+	Rectangle	scrollr;
+	Rectangle	lastsr;
+	Rectangle	all;
+	Row			*row;
+	Column		*col;
 
 	uint	iq1;	/* last input position */
 	uint	eq0;	/* start of typing for ESC */
@@ -194,40 +194,40 @@ struct Text
 	int		ncache;	/* storage for insert */
 	int		ncachealloc;
 	Rune	*cache;
-	int	nofill;
-	int	needundo;
+	int		nofill;
+	int		needundo;
 };
 
-uint		textbacknl(Text*, uint, uint);
-uint		textbsinsert(Text*, uint, Rune*, uint, int, int*);
+uint	textbacknl(Text*, uint, uint);
+uint	textbsinsert(Text*, uint, Rune*, uint, int, int*);
 int		textbswidth(Text*, Rune);
 int		textclickhtmlmatch(Text*, uint*, uint*);
 int		textclickmatch(Text*, int, int, int, uint*);
-void		textclose(Text*);
-void		textcolumnate(Text*, Dirlist**, int);
-void		textcommit(Text*, int);
-void		textconstrain(Text*, uint, uint, uint*, uint*);
-void		textdelete(Text*, uint, uint, int);
-void		textdoubleclick(Text*, uint*, uint*);
-void		textfill(Text*);
-void		textframescroll(Text*, int);
-void		textinit(Text*, File*, Rectangle, Reffont*, Image**);
-void		textinsert(Text*, uint, Rune*, uint, int);
+void	textclose(Text*);
+void	textcolumnate(Text*, Dirlist**, int);
+void	textcommit(Text*, int);
+void	textconstrain(Text*, uint, uint, uint*, uint*);
+void	textdelete(Text*, uint, uint, int);
+void	textdoubleclick(Text*, uint*, uint*);
+void	textfill(Text*);
+void	textframescroll(Text*, int);
+void	textinit(Text*, File*, Rectangle, Reffont*, Image**);
+void	textinsert(Text*, uint, Rune*, uint, int);
 int		textload(Text*, uint, char*, int);
-Rune		textreadc(Text*, uint);
-void		textredraw(Text*, Rectangle, Font*, Image*, int);
-void		textreset(Text*);
+Rune	textreadc(Text*, uint);
+void	textredraw(Text*, Rectangle, Font*, Image*, int);
+void	textreset(Text*);
 int		textresize(Text*, Rectangle, int);
-void		textscrdraw(Text*);
-void		textscroll(Text*, int);
-void		textselect(Text*);
+void	textscrdraw(Text*);
+void	textscroll(Text*, int);
+void	textselect(Text*);
 int		textselect2(Text*, uint*, uint*, Text**);
 int		textselect23(Text*, uint*, uint*, Image*, int);
 int		textselect3(Text*, uint*, uint*);
-void		textsetorigin(Text*, uint, int);
-void		textsetselect(Text*, uint, uint);
-void		textshow(Text*, uint, uint, int);
-void		texttype(Text*, Rune);
+void	textsetorigin(Text*, uint, int);
+void	textsetselect(Text*, uint, uint);
+void	textshow(Text*, uint, uint, int);
+void	texttype(Text*, Rune);
 
 struct Window
 {

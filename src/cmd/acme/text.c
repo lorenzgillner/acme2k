@@ -540,7 +540,7 @@ textbswidth(Text *t, Rune c)
 	int skipping;
 
 	/* there is known to be at least one character to erase */
-	if(c == 0x08)	/* ^H: erase character */
+	if(c == 0x08)
 		return 1;
 	q = t->q0;
 	skipping = TRUE;
@@ -672,6 +672,7 @@ texttype(Text *t, Rune r)
 	int nr;
 	Rune *rp;
 	Text *u;
+	Window *w;
 
 	if(t->what!=Body && t->what!=Tag && r=='\n')
 		return;
@@ -715,12 +716,6 @@ texttype(Text *t, Rune r)
 		q0 = textbacknl(t, t->org, n);
 		textsetorigin(t, q0, TRUE);
 		return;
-
-/* 
- *  Keybindings for moving the cursor up and 
- *  down the text via up and down arrow keys.
- */
-	
 	case Kdown:
 		if(t->what == Tag)
  			goto Tagdown;
@@ -761,14 +756,6 @@ texttype(Text *t, Rune r)
 		if( t->q0-nnb > 1  && textreadc(t, t->q0-nnb-1)=='\n' ) nnb++;
 		textshow(t, t->q0-nnb, t->q0-nnb, TRUE);
 		return;
-
-/*
- *  Home and End now respectively take you to the
- *  beginning and to the end of the line respectively.
- *  Also keep the original ^A and ^E keybindings.
- */
-
-	case 0x01:
 	case Khome:
 		typecommit(t);
 		/* go to where ^U would erase, if not already at BOL */
@@ -777,7 +764,6 @@ texttype(Text *t, Rune r)
 			nnb = textbswidth(t, 0x15);
 		textshow(t, t->q0-nnb, t->q0-nnb, TRUE);
 		return;
-	case 0x05:
 	case Kend:
 		typecommit(t);
 		q0 = t->q0;
@@ -785,46 +771,35 @@ texttype(Text *t, Rune r)
 			q0++;
 		textshow(t, q0, q0, TRUE);
 		return;
-		
-/* I'll keep the MAC-keybindings 'cuz im such a nice guy */
-
-	case Kcmd+'c':	/* %C: copy */
+	case 0x01:	/* ^A: :, */
+		textsetselect(t, 0, t->file->b.nc);
+		return;
+	case 0x03:	/* ^C: copy */
 		typecommit(t);
 		cut(t, t, nil, TRUE, FALSE, nil, 0);
 		return;
-	case Kcmd+'z':	/* %Z: undo */
+	case 0x1A:	/* ^Z: undo */
 	 	typecommit(t);
 		undo(t, nil, nil, TRUE, 0, nil, 0);
 		return;
-	case Kcmd+'Z':	/* %-shift-Z: redo */
+	case 0x19:	/* ^Y: redo */
 	 	typecommit(t);
 		undo(t, nil, nil, FALSE, 0, nil, 0);
-		return;	
-
-/*
- *  Adding Windows and X11 -compatible Ctrl+C, Ctrl+Z and
- *  Ctrl+Y (for redoing). TODO: find out how to check out for
- *  shift press, for Ctrl+Shift+Z in this godforsaken switch()
- */
-
-	case 0x03:	/* Ctrl+C: copy */
+		return;
+	case 0x10:  /* ^P: put */
 		typecommit(t);
-		cut(t, t, nil, TRUE, FALSE, nil, 0);
+		w = t->w;
+		put(&w->body, nil, nil, XXX, XXX, nil, 0);
 		return;
-	case 0x1A:	/* Ctrl+Z: undo */
-	 	typecommit(t);
-		undo(t, nil, nil, TRUE, 0, nil, 0);
-		return;
-	case 0x19:	/* Ctrl+Y: redo */
-	 	typecommit(t);
-		undo(t, nil, nil, FALSE, 0, nil, 0);
-		return;
-
+	/*case 0x04:	 ^D: del 
+		typecommit(t);
+		del(t->w->body, nil, nil, FALSE, XXX, nil, 0);
+		return;*/
 	Tagdown:
 		/* expand tag to show all text */
 		if(!t->w->tagexpand){
-		t->w->tagexpand = TRUE;
-		winresize(t->w, t->w->r, FALSE, TRUE);
+			t->w->tagexpand = TRUE;
+			winresize(t->w, t->w->r, FALSE, TRUE);
 		}
 		return;
 	Tagup:
@@ -837,39 +812,13 @@ texttype(Text *t, Rune r)
 		return;
 	}
 	
-
-	
 	if(t->what == Body){
 		seq++;
 		filemark(t->file);
 	}
 	
-	/* cut/paste must be done after the seq++/filemark */
-	
+	/* cut/paste must be done after the seq++/filemark */
 	switch(r){
-	case Kcmd+'x':	/* %X: cut */
-		typecommit(t);
-		if(t->what == Body){
-			seq++;
-			filemark(t->file);
-		}
-		cut(t, t, nil, TRUE, TRUE, nil, 0);
-		textshow(t, t->q0, t->q0, 1);
-		t->iq1 = t->q0;
-		return;
-	case Kcmd+'v':	/* %V: paste */
-		typecommit(t);
-		if(t->what == Body){
-			seq++;
-			filemark(t->file);
-		}
-		paste(t, t, nil, TRUE, FALSE, nil, 0);
-		textshow(t, t->q0, t->q1, 1);
-		t->iq1 = t->q1;
-		return;
-	
-	/* Same for Windows / X11 */
-	
 	case 0x18:	/* Ctrl+X: cut */
 		typecommit(t);
 		if(t->what == Body){
@@ -890,6 +839,41 @@ texttype(Text *t, Rune r)
 		textshow(t, t->q0, t->q1, 1);
 		t->iq1 = t->q1;
 		return;
+	case Kdel:
+		typecommit(t);
+		if(t->q0 == t->file->b.nc)
+			return;
+		nnb = 1;
+		q0 = t->q0;
+		q1 = q0+nnb;
+		for(i=0; i<t->file->ntext; i++){
+			u = t->file->text[i];
+			u->nofill = TRUE;
+			nb = nnb;
+			n = u->ncache;
+			if(n > 0){
+				if(q1 != u->cq0+n)
+					error("text.type delete");
+				if(n > nb)
+					n = nb;
+				u->ncache -= n;
+				textdelete(u, q0, q1, FALSE);
+				nb -= n;
+			}
+			if(u->eq0==q1 || u->eq0==~0)
+				u->eq0 = q0;
+			if(nb && u==t)
+				textdelete(u, q0, q0+nb, TRUE);
+			if(u != t)
+				textsetselect(u, u->q0, u->q1);
+			else
+				textsetselect(t, q0, q0);
+			u->nofill = FALSE;
+		}
+		for(i=0; i<t->file->ntext; i++)
+			textfill(t->file->text[i]);
+		t->iq1 = t->q0 + nnb;
+		return;
 	}
 
 	if(t->q1 > t->q0){
@@ -902,14 +886,13 @@ texttype(Text *t, Rune r)
 	
 	switch(r){
 	case 0x06:	/* ^F: complete */
-	case Kins:
 		typecommit(t);
 		rp = textcomplete(t);
 		if(rp == nil)
 			return;
 		nr = runestrlen(rp);
 		break;	/* fall through to normal insertion case */
-	case 0x1B:
+	case Kesc:
 		if(t->eq0 != ~0) {
 			if(t->eq0 <= t->q0)
 				textsetselect(t, t->eq0, t->q0);
@@ -920,16 +903,7 @@ texttype(Text *t, Rune r)
 			typecommit(t);
 		t->iq1 = t->q0;
 		return;
-
-/*
- *  quick hack for DELETE-key, just added it to see what happens and
- *  apparently it works like ^U and erases whole lines. i should learn c
- */
- 
-		
-	case 0x08:	/* ^H: erase character */
-	case 0x15:	/* ^U: erase line */
-	case 0x7F:
+	case Kbs:
 	case 0x17:	/* ^W: erase  word */
 		if(t->q0 == 0)	/* nothing to erase */
 			return;
@@ -1467,8 +1441,9 @@ textselect3(Text *t, uint *q0, uint *q1)
 	return h;
 }
 
-static Rune left1[] =  { '{', '[', '(', '<', 0xab, 0 };
-static Rune right1[] = { '}', ']', ')', '>', 0xbb, 0 };
+/* XXX trying $ for LaTeX inline math */
+static Rune left1[] =  { '{', '[', '(', '<', '$', 0xab, 0 };
+static Rune right1[] = { '}', ']', ')', '>', '$', 0xbb, 0 };
 static Rune left2[] =  { '\n', 0 };
 static Rune left3[] =  { '\'', '"', '`', 0 };
 
