@@ -32,7 +32,6 @@ HFILES=dat.h\
 	config.h
 
 <$PLAN9/src/mkone
-# <$PLAN9/src/mkdirs
 
 edit.$O ecmd.$O elog.$O:	edit.h
 
