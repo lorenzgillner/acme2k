@@ -10,7 +10,7 @@
 
 #define C_WINBUTTON	0xFFFF57FF
 #define C_COLBUTTON	0xFFFF57FF
-#define C_TMPBUTTON	0x57FFFFFF /* <-- GOD's fav color , iceberg blue
+#define C_TMPBUTTON	0x57FFFFFF
 #define C_SCROLLBG	0x0000A8FF
 
 #define C_BUTTON2HL	0xA80000FF
