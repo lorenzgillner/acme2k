@@ -28,5 +28,7 @@ pgrep -x plumber >/dev/null || 9 plumber
 # add acme scriptlets to PATH (indent, commenting etc)
 PATH=$HOME/lib/acme/bin:$PATH
 
+acmeshell="/bin/bash" export acmeshell
+
 # start acme with parameters
 /mnt/e/src/plan9/plan9port/bin/acme2k -m $mntpt -f $font -F $Font $cwd
