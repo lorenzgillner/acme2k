@@ -1,0 +1,32 @@
+#!/bin/bash
+
+if [ -z $1 ]; then
+	cwd=$HOME
+else
+	cwd=$1
+fi
+
+PATH=$PATH:/mnt/e/src/plan9/plan9port/bin
+
+# acme mount point
+mntpt="$HOME/.acme"
+
+# export acme mount point for use in scriptlets
+export ACME_MNTPT=$mntpt
+
+# set acme fonts here so we don't have to re-compile if we change our mind about them
+font="/mnt/font/Ubuntu/13a/font"
+#font="/mnt/font/DejaVuSerif/13a/font"
+Font="/mnt/font/Hack-Regular/17a/font"
+
+# default window layout path
+#layout="$HOME/lib/acme/dump/default.dump"
+
+# check if plumber is running because acme is only half the fun without plumbing
+pgrep -x plumber >/dev/null || 9 plumber
+
+# add acme scriptlets to PATH (indent, commenting etc)
+PATH=$HOME/lib/acme/bin:$PATH
+
+# start acme with parameters
+/mnt/e/src/plan9/plan9port/bin/acme2k -m $mntpt -f $font -F $Font $cwd
