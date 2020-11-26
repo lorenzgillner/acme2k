@@ -2,3 +2,4 @@
 * delete row
 * ctrl+s puts
 * ctrl+p prints
+* ctrl+g places cursor in tag bar to get a new path

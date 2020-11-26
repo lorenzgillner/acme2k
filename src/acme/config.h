@@ -64,4 +64,4 @@ int bartflag = TRUE;
  *  [!] Moved the actual color definitions to the individual theme files.
  */
 
-#include "../../colors/buckle"
+#include "../../colors/solarized-light"
